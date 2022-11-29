@@ -55,7 +55,6 @@ public class CadastroGrupoService {
     public void associarPermissao(Long grupoId, Long permissaoId) {
         Grupo grupo = buscarOuFalhar(grupoId);
         Permissao permissao = cadastroPermissao.buscarOuFalhar(permissaoId);
-
         grupo.adicionarPermissao(permissao);
     }
 
@@ -63,7 +62,6 @@ public class CadastroGrupoService {
     public void desassociarPermissao(Long grupoId, Long permissaoId) {
         Grupo grupo = buscarOuFalhar(grupoId);
         Permissao permissao = cadastroPermissao.buscarOuFalhar(permissaoId);
-
         grupo.removerPermissao(permissao);
     }
 

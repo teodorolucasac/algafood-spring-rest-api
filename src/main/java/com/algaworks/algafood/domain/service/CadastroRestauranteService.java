@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CadastroRestauranteService {
@@ -31,6 +32,9 @@ public class CadastroRestauranteService {
 
     @Autowired
     private CadastroFormaPagamentoService cadastroFormaPagamento;
+
+    @Autowired
+    private CadastroUsuarioService cadastroUsuario;
 
     @Transactional
     public Restaurante salvar(Restaurante restaurante) {
@@ -72,28 +76,34 @@ public class CadastroRestauranteService {
     @Transactional
     public void ativar(Long restauranteId) {
         Restaurante restauranteAtual = buscarOuFalhar(restauranteId);
-
         restauranteAtual.ativar();
     }
 
     @Transactional
     public void inativar(Long restauranteId) {
         Restaurante restauranteAtual = buscarOuFalhar(restauranteId);
-
         restauranteAtual.inativar();
+    }
+
+    @Transactional
+    public void ativar(List<Long> restauranteIds) {
+        restauranteIds.forEach(this::ativar);
+    }
+
+    @Transactional
+    public void inativar(List<Long> restauranteIds) {
+        restauranteIds.forEach(this::inativar);
     }
 
     @Transactional
     public void abrir(Long restauranteId) {
         Restaurante restaurante = buscarOuFalhar(restauranteId);
-
         restaurante.abrir();
     }
 
     @Transactional
     public void fechar(Long restauranteId) {
         Restaurante restaurante = buscarOuFalhar(restauranteId);
-
         restaurante.fechar();
     }
 
@@ -101,19 +111,29 @@ public class CadastroRestauranteService {
     @Transactional
     public void desassociarFormaPagamento(Long restauranteId, Long formaPagamentoId) {
         Restaurante restaurante = buscarOuFalhar(restauranteId);
-
         FormaPagamento formaPagamento = cadastroFormaPagamento.buscarOuFalhar(formaPagamentoId);
-
         restaurante.removerFormaPagamento(formaPagamento);
     }
 
     @Transactional
     public void associarFormaPagamento(Long restauranteId, Long formaPagamentoId) {
         Restaurante restaurante = buscarOuFalhar(restauranteId);
-
         FormaPagamento formaPagamento = cadastroFormaPagamento.buscarOuFalhar(formaPagamentoId);
-
         restaurante.adicionarFormaPagamento(formaPagamento);
+    }
+
+    @Transactional
+    public void associarResponsavel(Long restauranteId, Long usuarioId) {
+        Restaurante restaurante = buscarOuFalhar(restauranteId);
+        Usuario responsavel = cadastroUsuario.buscarOuFalhar(usuarioId);
+        restaurante.adicionarResponsavel(responsavel);
+    }
+
+    @Transactional
+    public void desassociarResponsavel(Long restauranteId, Long usuarioId) {
+        Restaurante restaurante = buscarOuFalhar(restauranteId);
+        Usuario responsavel = cadastroUsuario.buscarOuFalhar(usuarioId);
+        restaurante.removerResponsavel(responsavel);
     }
 
     public Restaurante buscarOuFalhar(Long id) {
