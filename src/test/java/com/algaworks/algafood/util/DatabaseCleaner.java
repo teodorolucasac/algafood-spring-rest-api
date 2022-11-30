@@ -1,5 +1,4 @@
 package com.algaworks.algafood.util;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -18,85 +17,85 @@ import org.springframework.stereotype.Component;
 @Component
 public class DatabaseCleaner {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private DataSource dataSource;
+	@Autowired
+	private DataSource dataSource;
 
-    private Connection connection;
+	private Connection connection;
 
-    public void clearTables() {
-        try (Connection connection = dataSource.getConnection()) {
-            this.connection = connection;
+	public void clearTables() {
+		try (Connection connection = dataSource.getConnection()) {
+			this.connection = connection;
+			
+			checkTestDatabase();
+			tryToClearTables();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			this.connection = null;
+		}
+	}
+	
+	private void checkTestDatabase() throws SQLException {
+		String catalog = connection.getCatalog();
 
-            checkTestDatabase();
-            tryToClearTables();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            this.connection = null;
-        }
-    }
+		if (catalog == null || !catalog.endsWith("test")) {
+			throw new RuntimeException(
+					"Cannot clear database tables because '" + catalog + "' is not a test database (suffix 'test' not found).");
+		}
+	}
 
-    private void checkTestDatabase() throws SQLException {
-        String catalog = connection.getCatalog();
+	private void tryToClearTables() throws SQLException {
+		List<String> tableNames = getTableNames();
+		clear(tableNames);
+	}
 
-        if (catalog == null || !catalog.endsWith("test")) {
-            throw new RuntimeException(
-                    "Cannot clear database tables because '" + catalog + "' is not a test database (suffix 'test' not found).");
-        }
-    }
+	private List<String> getTableNames() throws SQLException {
+		List<String> tableNames = new ArrayList<>();
 
-    private void tryToClearTables() throws SQLException {
-        List<String> tableNames = getTableNames();
-        clear(tableNames);
-    }
+		DatabaseMetaData metaData = connection.getMetaData();
+		ResultSet rs = metaData.getTables(connection.getCatalog(), null, null, new String[] { "TABLE" });
 
-    private List<String> getTableNames() throws SQLException {
-        List<String> tableNames = new ArrayList<>();
+		while (rs.next()) {
+			tableNames.add(rs.getString("TABLE_NAME"));
+		}
 
-        DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet rs = metaData.getTables(connection.getCatalog(), null, null, new String[] { "TABLE" });
+		tableNames.remove("flyway_schema_history");
 
-        while (rs.next()) {
-            tableNames.add(rs.getString("TABLE_NAME"));
-        }
+		return tableNames;
+	}
 
-        tableNames.remove("flyway_schema_history");
+	private void clear(List<String> tableNames) throws SQLException {
+		Statement statement = buildSqlStatement(tableNames);
 
-        return tableNames;
-    }
+		logger.debug("Executing SQL");
+		statement.executeBatch();
+	}
 
-    private void clear(List<String> tableNames) throws SQLException {
-        Statement statement = buildSqlStatement(tableNames);
+	private Statement buildSqlStatement(List<String> tableNames) throws SQLException {
+		Statement statement = connection.createStatement();
 
-        logger.debug("Executing SQL");
-        statement.executeBatch();
-    }
+		statement.addBatch(sql("SET FOREIGN_KEY_CHECKS = 0"));
+		addTruncateSatements(tableNames, statement);
+		statement.addBatch(sql("SET FOREIGN_KEY_CHECKS = 1"));
 
-    private Statement buildSqlStatement(List<String> tableNames) throws SQLException {
-        Statement statement = connection.createStatement();
+		return statement;
+	}
 
-        statement.addBatch(sql("SET FOREIGN_KEY_CHECKS = 0"));
-        addTruncateSatements(tableNames, statement);
-        statement.addBatch(sql("SET FOREIGN_KEY_CHECKS = 1"));
+	private void addTruncateSatements(List<String> tableNames, Statement statement) {
+		tableNames.forEach(tableName -> {
+			try {
+				statement.addBatch(sql("TRUNCATE TABLE " + tableName));
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
 
-        return statement;
-    }
-
-    private void addTruncateSatements(List<String> tableNames, Statement statement) {
-        tableNames.forEach(tableName -> {
-            try {
-                statement.addBatch(sql("TRUNCATE TABLE " + tableName));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    private String sql(String sql) {
-        logger.debug("Adding SQL: {}", sql);
-        return sql;
-    }
-
+	private String sql(String sql) {
+		logger.debug("Adding SQL: {}", sql);
+		return sql;
+	}
+	
 }

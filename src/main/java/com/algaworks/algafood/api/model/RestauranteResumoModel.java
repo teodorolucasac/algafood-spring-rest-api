@@ -3,10 +3,11 @@ package com.algaworks.algafood.api.model;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class RestauranteResumoModel {
 
-    private Long id;
-    private String nome;
+	private Long id;
+	private String nome;
+	
 }

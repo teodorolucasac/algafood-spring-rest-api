@@ -3,10 +3,11 @@ package com.algaworks.algafood.api.model;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class FormaPagamentoModel {
 
-    private Long id;
-    private String descricao;
+	private Long id;
+	private String descricao;
+	
 }

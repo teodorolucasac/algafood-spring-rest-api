@@ -1,20 +1,21 @@
 package com.algaworks.algafood.api.model.input;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-@Getter
+import lombok.Getter;
+import lombok.Setter;
+
 @Setter
+@Getter
 public class CidadeInput {
 
-    @NotBlank
-    private String nome;
-
-    @Valid
-    @NotNull
-    private EstadoIdInput estado;
+	@NotBlank
+	private String nome;
+	
+	@Valid
+	@NotNull
+	private EstadoIdInput estado;
+	
 }
