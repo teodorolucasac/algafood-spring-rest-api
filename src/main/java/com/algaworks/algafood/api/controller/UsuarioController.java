@@ -3,10 +3,9 @@ package com.algaworks.algafood.api.controller;
 import com.algaworks.algafood.api.assembler.UsuarioInputDisassembler;
 import com.algaworks.algafood.api.assembler.UsuarioModelAssembler;
 import com.algaworks.algafood.api.model.UsuarioModel;
+import com.algaworks.algafood.api.model.input.SenhaInput;
+import com.algaworks.algafood.api.model.input.UsuarioComSenhaInput;
 import com.algaworks.algafood.api.model.input.UsuarioInput;
-import com.algaworks.algafood.api.model.input.UsuarioSemSenhaInput;
-import com.algaworks.algafood.api.model.input.UsuarioSenhaInput;
-import com.algaworks.algafood.domain.exception.NegocioException;
 import com.algaworks.algafood.domain.model.Usuario;
 import com.algaworks.algafood.domain.repository.UsuarioRepository;
 import com.algaworks.algafood.domain.service.CadastroUsuarioService;
@@ -34,23 +33,23 @@ public class UsuarioController {
     private UsuarioInputDisassembler usuarioInputDisassembler;
 
     @PostMapping
-    private UsuarioModel adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
-        Usuario usuario = usuarioInputDisassembler.toDomain(usuarioInput);
+    private UsuarioModel adicionar(@RequestBody @Valid UsuarioComSenhaInput usuarioComSenhaInput) {
+        Usuario usuario = usuarioInputDisassembler.toDomain(usuarioComSenhaInput);
 
         return usuarioModelAssembler.toModel(cadastroUsuario.salvar(usuario));
     }
 
     @PutMapping("/{id}")
-    private UsuarioModel atualizar(@PathVariable Long id, @RequestBody @Valid UsuarioSemSenhaInput usuarioSemSenhaInput) {
+    private UsuarioModel atualizar(@PathVariable Long id, @RequestBody @Valid UsuarioInput usuarioInput) {
         Usuario usuarioAtual = cadastroUsuario.buscarOuFalhar(id);
-        usuarioInputDisassembler.copyToDomain(usuarioSemSenhaInput, usuarioAtual);
+        usuarioInputDisassembler.copyToDomain(usuarioInput, usuarioAtual);
 
         return usuarioModelAssembler.toModel(cadastroUsuario.salvar(usuarioAtual));
     }
 
     @PutMapping("/{id}/senha")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    private void alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioSenhaInput senha) {
+    private void alterarSenha(@PathVariable Long id, @RequestBody @Valid SenhaInput senha) {
         cadastroUsuario.alterarSenha(id, senha.getSenhaAtual(), senha.getNovaSenha());
     }
 

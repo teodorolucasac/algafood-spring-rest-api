@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ public class PermissaoModelAssembler {
         return modelMapper.map(permissao, PermissaoModel.class);
     }
 
-    public List<PermissaoModel> toCollectionModel(List<Permissao> permissoes) {
+    public List<PermissaoModel> toCollectionModel(Collection<Permissao> permissoes) {
         return permissoes.stream()
                 .map(permissao -> toModel(permissao))
                 .collect(Collectors.toList());

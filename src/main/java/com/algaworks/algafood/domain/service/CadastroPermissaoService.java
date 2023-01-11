@@ -13,10 +13,6 @@ public class CadastroPermissaoService {
 
     @Autowired
     private PermissaoRepository permissaoRepository;
-//
-//    public Permissao salvar(Permissao permissao) {
-//        return permissaoRepository.save(permissao);
-//    }
 
     public Permissao buscarOuFalhar(Long permissaoId) {
         return permissaoRepository.findById(permissaoId)

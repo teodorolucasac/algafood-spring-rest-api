@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
-public class UsuarioSenhaInput {
+public class SenhaInput {
 
     @NotBlank
     private String senhaAtual;

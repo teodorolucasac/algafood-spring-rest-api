@@ -47,7 +47,8 @@ public class RestauranteProdutoController {
 
     @PutMapping("/{produtoId}")
     public ProdutoModel atualizar(@PathVariable Long restauranteId,
-                                  @PathVariable Long produtoId, @RequestBody @Valid ProdutoInput produtoInput) {
+                                  @PathVariable Long produtoId,
+                                  @RequestBody @Valid ProdutoInput produtoInput) {
         Produto produtoAtual = cadastroProduto.buscarOuFalhar(restauranteId, produtoId);
         produtoInputDisassembler.copyToDomain(produtoInput, produtoAtual);
 
@@ -55,10 +56,19 @@ public class RestauranteProdutoController {
     }
 
     @GetMapping
-    public List<ProdutoModel> listar(@PathVariable Long restauranteId) {
+    public List<ProdutoModel> listar(@PathVariable Long restauranteId,
+                                     @RequestParam(required = false) boolean incluirInativos) {
         Restaurante restaurante = cadastroRestaurante.buscarOuFalhar(restauranteId);
 
-        return produtoModelAssembler.toCollectionModel(produtoRepository.findByRestaurante(restaurante));
+        List<Produto> todosProdutos = null;
+
+        if (incluirInativos) {
+            todosProdutos = produtoRepository.findTodosByRestaurante(restaurante);
+        } else {
+            todosProdutos = produtoRepository.findAtivosByRestaurante(restaurante);
+        }
+
+        return produtoModelAssembler.toCollectionModel(todosProdutos);
     }
 
     @GetMapping("/{produtoId}")

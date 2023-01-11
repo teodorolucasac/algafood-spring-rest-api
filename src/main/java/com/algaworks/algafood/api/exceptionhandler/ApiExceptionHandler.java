@@ -16,13 +16,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -56,6 +59,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
     }
 
+    @Override
+    protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers,
+                                                         HttpStatus status, WebRequest request) {
+        ex.getBindingResult();
+        return handleValidationInternal(ex, ex.getBindingResult(), headers, status, request);
+    }
+
     @ExceptionHandler(ValidacaoException.class)
     public ResponseEntity<Object> handleValidacaoException(ValidacaoException ex, WebRequest request) {
 
@@ -65,7 +75,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,HttpHeaders headers, HttpStatus status, WebRequest request) {
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
         return handleValidationInternal(ex, ex.getBindingResult(), headers, status, request);
     }
@@ -102,7 +112,22 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
+    @Override
+    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex
+            , HttpHeaders headers, HttpStatus status, WebRequest request) {
+        return ResponseEntity.status(status).headers(headers).build();
+    }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> erroMaxUpload(MaxUploadSizeExceededException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ProblemType problemType = ProblemType.ERRO_DE_SISTEMA;
+        String detail = String.format("O tamanho do arquivo enviado é superior ao tamanho máximo de 3000KB.");
+
+        Problem problem = createProblemBuilder(status, problemType, detail).userMessage(detail).build();
+
+        return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
+    }
 
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(

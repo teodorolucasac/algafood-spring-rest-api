@@ -24,4 +24,5 @@ public class CozinhaModelAssembler {
                 .map(cozinha -> toModel(cozinha))
                 .collect(Collectors.toList());
     }
+
 }

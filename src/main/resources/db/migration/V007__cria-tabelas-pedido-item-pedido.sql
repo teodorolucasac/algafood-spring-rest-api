@@ -1,6 +1,6 @@
 create table pedido (
 	id bigint not null auto_increment,
-    sub_total decimal(10,2) not null,
+    subtotal decimal(10,2) not null,
     taxa_frete decimal(10,2) not null,
     valor_total decimal(10,2) not null,
 
