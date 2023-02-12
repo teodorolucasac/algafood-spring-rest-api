@@ -1,10 +1,12 @@
 package com.algaworks.algafood.api.controller;
 
+import com.algaworks.algafood.api.AlgaLinks;
 import com.algaworks.algafood.api.assembler.FormaPagamentoModelAssembler;
 import com.algaworks.algafood.api.model.FormaPagamentoModel;
 import com.algaworks.algafood.domain.model.Restaurante;
 import com.algaworks.algafood.domain.service.CadastroRestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +22,16 @@ public class RestauranteFormaPagamentoController {
     @Autowired
     private FormaPagamentoModelAssembler formaPagamentoModelAssembler;
 
+    @Autowired
+    private AlgaLinks algaLinks;
+
     @GetMapping
-    public List<FormaPagamentoModel> listar(@PathVariable Long restauranteId) {
+    public CollectionModel<FormaPagamentoModel> listar(@PathVariable Long restauranteId) {
         Restaurante restaurante = cadastroRestaurante.buscarOuFalhar(restauranteId);
 
-        return formaPagamentoModelAssembler.toColletctionModel(restaurante.getFormasPagamento());
+        return formaPagamentoModelAssembler.toColletctionModel(restaurante.getFormasPagamento())
+                .removeLinks()
+                .add(algaLinks.linkToRestauranteFormasPagamento(restauranteId));
     }
 
     @PutMapping("/{formaPagamentoId}")
